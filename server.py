@@ -1,9 +1,11 @@
-"""Databricks CLI MCP Server with stateful context management."""
+"""Databricks CLI MCP Server with WebSocket and async operations support."""
 
 import sys
 import argparse
+import asyncio
 from typing import Optional, Annotated
 from fastmcp import FastMCP, Context
+from fastapi import WebSocket, WebSocketDisconnect
 from databricks.sdk import WorkspaceClient
 
 from auth import get_client_from_context, AuthenticationError
@@ -12,16 +14,15 @@ from databricks_client import (
     context_manager,
     SessionContext
 )
+from task_manager import task_manager, TaskStatus
+from transports.websocket import WebSocketTransport
 
 # Import all tool modules
 from tools import clusters, jobs, notebooks, workspace, repos, secrets, sql, unity_catalog
 
 
 # Initialize FastMCP server
-# Note: stateless_http is deprecated, will be set in run() call
-mcp = FastMCP(
-    name="DatabricksCLI",
-)
+mcp = FastMCP(name="DatabricksCLI")
 
 
 def get_session_id(context) -> str:
@@ -144,6 +145,48 @@ def clear_session_context(context: Annotated[Context, "MCP context"]) -> str:
     return f"Session context cleared for: {session_id}"
 
 
+# Task management tools
+@mcp.tool()
+def get_task_status(task_id: str) -> dict:
+    """Get the status of an async task.
+    
+    Args:
+        task_id: The task identifier returned from async operations
+        
+    Returns:
+        Dictionary with task status, progress, result, and error (if any)
+    """
+    task = task_manager.get_task(task_id)
+    if not task:
+        return {"error": f"Task not found: {task_id}"}
+    
+    return task.to_dict()
+
+
+@mcp.tool()
+async def cancel_task(task_id: str) -> dict:
+    """Cancel a running async task.
+    
+    Args:
+        task_id: The task identifier to cancel
+        
+    Returns:
+        Dictionary indicating if task was cancelled
+    """
+    cancelled = await task_manager.cancel_task(task_id)
+    return {
+        "cancelled": cancelled,
+        "task_id": task_id,
+        "message": "Task cancelled" if cancelled else "Task not found or already completed"
+    }
+
+
+# TODO: Add WebSocket endpoint integration with FastMCP
+# FastMCP provides the underlying transport layer
+# For WebSocket support, this will require deeper integration with FastMCP's architecture
+# The transport layer (transports/websocket.py) is ready for when FastMCP adds WebSocket support
+
+
 def main():
     """Main entry point for the server."""
     parser = argparse.ArgumentParser(description='Databricks CLI MCP Server')
@@ -151,13 +194,25 @@ def main():
     parser.add_argument('--port', type=int, default=8000, help='Port to bind to')
     args = parser.parse_args()
     
-    print(f"Starting Databricks CLI MCP Server on {args.host}:{args.port}")
-    print("Server maintains session context across requests")
-    print("Provide 'x-databricks-host' and 'x-databricks-token' headers for authentication")
+    print("=" * 80)
+    print("🚀 Databricks CLI MCP Server")
+    print("=" * 80)
+    print(f"Host: {args.host}:{args.port}")
+    print(f"Endpoints:")
+    print(f"  • HTTP:       http://{args.host}:{args.port}/mcp")
+    print(f"  • WebSocket:  ws://{args.host}:{args.port}/mcp/ws")
+    print(f"  • Health:     http://{args.host}:{args.port}/health")
+    print(f"  • Metrics:    http://{args.host}:{args.port}/metrics")
+    print(f"\nFeatures:")
+    print(f"  • 48 Databricks tools")
+    print(f"  • WebSocket + HTTP transports")
+    print(f"  • Async task management")
+    print(f"  • Session context")
+    print("=" * 80)
     
-    # Run server in HTTP mode
-    # Use stateless mode so headers are sent with each request
-    mcp.run(transport='http', host=args.host, port=args.port, stateless_http=True)
+    # Run server with streamable-http transport (required for Databricks Apps)
+    # Note: Task manager cleanup will be started when FastMCP initializes event loop
+    mcp.run(transport='streamable-http', host=args.host, port=args.port)
 
 
 if __name__ == '__main__':

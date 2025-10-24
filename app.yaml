@@ -1,27 +1,16 @@
-# Databricks App Configuration
-# This configures how the app runs
+# Databricks App Configuration for MCP Server
+# Using uvicorn to run FastMCP's streamable-http ASGI app
 
-# MCP Server App  
-app:
-  name: databricks-mcp-server
-  description: MCP Server for Databricks CLI with 48 tools
-  
-  # Command to run the server
-  command:
-    - python
-    - server.py
-    - --host=0.0.0.0
-    - --port=8000
-  
-  # Environment configuration
-  env:
-    DATABRICKS_HOST: ${var.databricks_host}
-    DATABRICKS_TOKEN: ${var.databricks_token}
-  
-  # Resources
-  resources:
-    http:
-      - name: mcp-endpoint
-        port: 8000
-        public: true
+command:
+  - uvicorn
+  - app:app
+  - --host
+  - "0.0.0.0"
+  - --port
+  - "8000"
 
+resources:
+  http:
+    - name: mcp-endpoint
+      port: 8000
+      public: true

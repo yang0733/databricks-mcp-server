@@ -4,38 +4,36 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
-venv/
+*.egg-info/
+dist/
+build/
 .venv/
+venv/
+env/
 
-# Secrets and credentials
-*.token
-.databricks/
-.env
-.env.local
-secrets.yml
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
+.DS_Store
 
-# Testing
+# Databricks
+.databricks/
+*.log
+mcp_server.log
+
+# Environment
+.env
+.env.local
+
+# OAuth tokens
+.databricks_oauth_token
+
+# Test artifacts
 .pytest_cache/
 .coverage
 htmlcov/
 
-# Build artifacts
-dist/
-build/
-*.egg-info/
-
-# Logs
-*.log
-
-# OS
-.DS_Store
-Thumbs.db
-
-
+# Archives
+archive/

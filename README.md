@@ -1,120 +1,406 @@
 # Databricks MCP Server
 
-A comprehensive MCP (Model Context Protocol) server for Databricks CLI with 48 tools + Natural language chat agent powered by Claude Sonnet 4.5.
+A production-ready MCP (Model Context Protocol) server providing **50 Databricks tools** for AI agents like Cursor, Claude Desktop, and more.
 
-## 🎯 Features
+## 🚀 Quick Start (5 minutes)
 
-- **48 Databricks Tools**: Clusters, Jobs, Notebooks, SQL, Unity Catalog, Repos, Secrets, Workspace
-- **Stateful Sessions**: Maintains context across requests
-- **Chat Agent**: Natural language interface using Claude Sonnet 4.5
-- **3 LLM Options**: Databricks Claude, Claude API, or Local Ollama
-- **Production Ready**: Deployable as Databricks App
-
-## 🚀 Quick Start
-
-### Deploy to Databricks Apps
+### 1. Set Your Credentials
 
 ```bash
-# 1. Clone this repo
-git clone https://github.com/yang0733/databricks-mcp-server.git
-cd databricks-mcp-server
-
-# 2. Link to Databricks
-databricks repos create \
-  --url https://github.com/yang0733/databricks-mcp-server \
-  --provider github \
-  --path /Repos/YOUR_EMAIL/databricks-mcp-server
-
-# 3. Deploy
-databricks apps deploy databricks-mcp-server \
-  --source-code-path /Repos/YOUR_EMAIL/databricks-mcp-server \
-  --mode AUTO_SYNC
+export DATABRICKS_HOST="https://your-workspace.cloud.databricks.com"
+export DATABRICKS_TOKEN="dapi..."  # Your Personal Access Token
 ```
 
-### Run Locally
+### 2. Start the Server
 
 ```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Start MCP server
-python server.py --port 8000
-
-# Run chat agent (local LLM - free!)
-python chat_agent_ollama.py
+cd databricks_cli_mcp
+./start_local_mcp.sh
 ```
 
-## 💬 Chat Agent Examples
+Server runs at: `http://localhost:8080/mcp`
 
-```
-You: Show me all my clusters
-Agent: I found 3 clusters in your workspace...
+### 3. Configure Cursor
 
-You: Run a SQL query to get 5 rows from samples.nyctaxi.trips
-Agent: [executes query and shows results]
+Add to Cursor MCP settings (`~/.cursor/mcp.json`):
 
-You: List my recent jobs
-Agent: You have 8 jobs configured...
-```
-
-## 🔧 Available Tools (48)
-
-- **Clusters** (7): create, start, stop, delete, list, get, set_current
-- **Jobs** (7): create, run, cancel, delete, list, get, get_run
-- **SQL** (5): warehouses, queries, results
-- **Notebooks** (4): import, export, list, run
-- **Unity Catalog** (6): catalogs, schemas, tables, volumes
-- **Workspace** (5): list, import, export, delete, mkdirs
-- **Git Repos** (5): create, update, delete, list, get
-- **Secrets** (5): scopes, secrets management
-- **Context** (3): session state management
-
-## 📖 Documentation
-
-- [Complete Documentation](./README.md)
-- [Chat Agent Guide](./CHAT_AGENT.md)
-- [Ollama Setup](./OLLAMA_SETUP.md)
-- [Databricks Apps Deployment](./DATABRICKS_APPS_DEPLOYMENT.md)
-
-## 🎓 Architecture
-
-```
-User → Chat Agent (Claude) → MCP Server (48 tools) → Databricks API
+```json
+{
+  "mcpServers": {
+    "databricks": {
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
 ```
 
-## 🔐 Configuration
+### 4. Start Using!
 
-Set environment variables:
-```bash
-export DATABRICKS_HOST='https://your-workspace.cloud.databricks.com'
-export DATABRICKS_TOKEN='dapi...'
-export ANTHROPIC_API_KEY='sk-ant-...'  # For Claude API
+In Cursor, try:
 ```
-
-## 📊 Tech Stack
-
-- **FastMCP**: MCP server framework
-- **Databricks SDK**: Python SDK for Databricks
-- **Claude Sonnet 4.5**: LLM via Databricks Model Serving
-- **Ollama**: Local LLM option (free)
-
-## 🤝 Contributing
-
-Contributions welcome! This project provides a complete reference implementation for:
-- MCP server development
-- Databricks CLI automation
-- LLM-powered chat agents
-- Databricks Apps deployment
-
-## 📝 License
-
-MIT
-
-## 👤 Author
-
-Cliff Yang ([@yang0733](https://github.com/yang0733))
+"List my Databricks clusters"
+"Show me my SQL warehouses"
+"Execute query: SELECT * FROM samples.nyctaxi.trips LIMIT 10"
+```
 
 ---
 
-**Built with**: FastMCP • Databricks SDK • Claude AI • Ollama
+## 📦 What You Get
 
+### 50 Databricks Tools
+
+- **Clusters** (7): Create, start, stop, list, manage
+- **Jobs** (6): Create, run, cancel, monitor
+- **SQL** (8): Execute queries, manage warehouses
+- **Unity Catalog** (11): Catalogs, schemas, tables, volumes
+- **Workspace** (6): Files, notebooks, directories
+- **Notebooks** (5): Import, export, run
+- **Repos** (5): Git integration
+- **Secrets** (4): Secret management
+- **Tasks** (2): Async operations
+
+---
+
+## 🏗️ Project Structure
+
+```
+databricks_cli_mcp/
+├── README.md              # This file
+├── server.py              # Main MCP server (FastMCP)
+├── local_mcp_server.py    # Local server with PAT auth
+├── start_local_mcp.sh     # Quick start script
+│
+├── auth.py                # Authentication logic
+├── databricks_client.py   # Databricks SDK wrapper
+├── task_manager.py        # Async task management
+├── tool_registry.py       # Tool schema converter
+│
+├── tools/                 # 50 Databricks tools
+│   ├── clusters.py
+│   ├── jobs.py
+│   ├── sql.py
+│   ├── unity_catalog.py
+│   ├── workspace.py
+│   ├── notebooks.py
+│   ├── repos.py
+│   └── secrets.py
+│
+├── app.yaml               # Databricks Apps deployment config
+├── requirements.txt       # Python dependencies
+└── pyproject.toml         # Package configuration
+```
+
+---
+
+## 🔐 Authentication
+
+### Option 1: PAT (Personal Access Token) - Recommended
+
+**Best for**: Development, personal use
+
+```bash
+# Get your PAT from Databricks UI
+# Settings → Developer → Access tokens → Generate new token
+
+export DATABRICKS_HOST="https://your-workspace.cloud.databricks.com"
+export DATABRICKS_TOKEN="dapi..."
+
+./start_local_mcp.sh
+```
+
+**Pros**: ✅ Simple, ✅ Quick, ✅ Works immediately  
+**Cons**: ⚠️ 90-day expiry, ⚠️ Manual renewal
+
+### Option 2: M2M OAuth (Advanced)
+
+**Best for**: Production, teams, CI/CD
+
+1. Create service principal in Databricks
+2. Generate OAuth secret
+3. Set environment variables:
+
+```bash
+export DATABRICKS_APP_URL="https://your-app.databricksapps.com"
+export DATABRICKS_HOST="https://your-workspace.cloud.databricks.com"
+export DATABRICKS_CLIENT_ID="<service-principal-id>"
+export DATABRICKS_CLIENT_SECRET="<oauth-secret>"
+
+./start_oauth_proxy.sh
+```
+
+**Pros**: ✅ Auto-refresh, ✅ Better security, ✅ Team sharing  
+**Cons**: ⚠️ Requires service principal setup
+
+---
+
+## ☁️ Deploy to Databricks Apps
+
+### 1. Authenticate
+
+```bash
+databricks auth login
+```
+
+### 2. Deploy
+
+```bash
+./deploy_correct.sh
+```
+
+### 3. Get Your App URL
+
+```bash
+databricks apps get databricks-mcp-server | jq -r .url
+```
+
+---
+
+## 🧪 Testing
+
+### Test Locally
+
+```bash
+python test_local.py
+```
+
+### Test from Notebook
+
+Upload `notebooks/simple_test.py` to Databricks and run it.
+
+---
+
+## 💡 Example Usage
+
+### In Cursor
+
+```
+"Create a cluster named 'test' with 2 workers"
+"Start cluster 0730-172948-runts698"
+"Execute SQL: SELECT current_database()"
+"List tables in catalog main"
+"Export notebook /Users/me/analysis"
+"Show me my job runs"
+```
+
+### Programmatically
+
+```python
+from databricks.sdk import WorkspaceClient
+
+client = WorkspaceClient()
+
+# List clusters
+clusters = list(client.clusters.list())
+print(f"Found {len(clusters)} clusters")
+
+# Execute SQL
+result = client.sql.execute_query(
+    warehouse_id="abc123",
+    query="SELECT * FROM samples.nyctaxi.trips LIMIT 10"
+)
+```
+
+---
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `DATABRICKS_HOST` | Workspace URL | ✅ Yes |
+| `DATABRICKS_TOKEN` | Personal Access Token | ✅ Yes (PAT mode) |
+| `DATABRICKS_CLIENT_ID` | Service principal ID | For OAuth |
+| `DATABRICKS_CLIENT_SECRET` | OAuth secret | For OAuth |
+| `DATABRICKS_APP_URL` | Deployed app URL | For OAuth |
+
+### Server Configuration
+
+The server runs on port `8080` by default. Change in `start_local_mcp.sh`:
+
+```bash
+python3 local_mcp_server.py --port 8080
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Server won't start
+
+```bash
+# Check if port is in use
+lsof -i :8080
+
+# Kill existing process
+kill -9 <PID>
+
+# Restart
+./start_local_mcp.sh
+```
+
+### Authentication failed
+
+```bash
+# Verify credentials
+echo $DATABRICKS_HOST
+echo $DATABRICKS_TOKEN
+
+# Test manually
+curl -H "Authorization: Bearer $DATABRICKS_TOKEN" \
+  $DATABRICKS_HOST/api/2.0/clusters/list
+```
+
+### Cursor not connecting
+
+1. Check server is running: `curl http://localhost:8080/health`
+2. Verify Cursor config: `cat ~/.cursor/mcp.json`
+3. Restart Cursor
+4. Check logs: `tail -f mcp_server.log`
+
+### Permission errors
+
+- **Can't create clusters?** Ask your admin for permissions
+- **Can't access catalogs?** Check Unity Catalog permissions
+- **Can't run queries?** Verify SQL warehouse access
+
+---
+
+## 📚 Key Concepts
+
+### MCP (Model Context Protocol)
+
+An open protocol that lets AI assistants connect to external data sources and tools. Think of it as "API for AIs".
+
+### FastMCP
+
+A Python framework for building MCP servers. Makes it easy to expose Python functions as tools for AI agents.
+
+### Databricks SDK
+
+Official Python library for interacting with Databricks APIs. Powers all the tools in this server.
+
+---
+
+## 🔗 Resources
+
+- **Databricks API Docs**: https://docs.databricks.com/api/
+- **MCP Protocol**: https://modelcontextprotocol.io/
+- **FastMCP**: https://github.com/jlowin/fastmcp
+- **Databricks SDK**: https://github.com/databricks/databricks-sdk-py
+
+---
+
+## 📝 Requirements
+
+- Python 3.11+
+- Databricks workspace with API access
+- Personal Access Token or Service Principal
+- Cursor IDE (or any MCP-compatible client)
+
+---
+
+## 🎯 Common Tasks
+
+### Start a cluster
+
+```python
+# In Cursor
+"Start cluster <cluster-id>"
+
+# Or directly
+from databricks.sdk import WorkspaceClient
+client = WorkspaceClient()
+client.clusters.start(cluster_id="...")
+```
+
+### Run a SQL query
+
+```python
+# In Cursor
+"Execute query: SELECT * FROM my_table LIMIT 10"
+
+# Or directly
+result = client.sql.execute_query(
+    warehouse_id="...",
+    query="SELECT * FROM my_table"
+)
+```
+
+### Create a job
+
+```python
+# In Cursor
+"Create a job that runs notebook /path/to/notebook daily"
+
+# Or use the Databricks UI - easier for complex jobs!
+```
+
+---
+
+## ⚙️ Advanced Configuration
+
+### Custom Tools
+
+Add your own tools in `tools/` directory:
+
+```python
+# tools/custom.py
+from fastmcp import Context
+
+@mcp.tool()
+async def my_custom_tool(param: str, context: Context):
+    """My custom Databricks operation."""
+    client = get_databricks_client(context)
+    # Your logic here
+    return {"result": "success"}
+```
+
+Then register in `server.py`:
+
+```python
+from tools import custom
+```
+
+### Production Deployment
+
+For production use:
+1. Use M2M OAuth (not PAT)
+2. Deploy to Databricks Apps
+3. Enable monitoring (`/metrics` endpoint)
+4. Set up proper logging
+5. Configure auto-scaling
+
+---
+
+## 🎉 Success!
+
+You now have a fully functional Databricks MCP server! 
+
+**Next steps**:
+1. ✅ Start the server
+2. ✅ Configure Cursor  
+3. ✅ Try listing your clusters
+4. ✅ Execute your first SQL query
+5. 🚀 Automate all the things!
+
+---
+
+## 📄 License
+
+MIT
+
+## 🤝 Contributing
+
+Issues and PRs welcome! This project follows standard GitHub workflow.
+
+## 💬 Support
+
+- Check logs: `tail -f mcp_server.log`
+- Review error messages in Cursor
+- Verify Databricks permissions
+- Test API access directly with `curl`
+
+---
+
+**Built with ❤️ for Databricks automation**

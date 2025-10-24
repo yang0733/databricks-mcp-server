@@ -1,6 +1,6 @@
-# Databricks MCP Server
+# Databricks CLI MCP Server
 
-A production-ready MCP (Model Context Protocol) server providing **50 Databricks tools** for AI agents like Cursor, Claude Desktop, and more.
+A production-ready MCP (Model Context Protocol) server providing **50 Databricks CLI tools** for AI agents like Cursor, Claude Desktop, and more.
 
 ## 🚀 Quick Start (5 minutes)
 

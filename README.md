@@ -1,6 +1,8 @@
 # Databricks MCP Server
 A production-ready MCP server that exposes 50+ Databricks workspace operations through the MCP for AI agents like Cursor, Claude Desktop, and more.
 
+> **⚠️ DISCLAIMER**: This is **NOT** an official Databricks product and is **NOT** supported by Databricks. This is a community project that uses the Databricks SDK to provide MCP integration. Use at your own risk. For official Databricks support, please contact Databricks directly.
+
 ## 🚀 Quick Start (5 minutes)
 
 ### 1. Set Your Credentials

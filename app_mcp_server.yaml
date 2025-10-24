@@ -1,0 +1,27 @@
+# Databricks App configuration for MCP Server
+name: databricks-mcp-server
+description: MCP Server for Databricks CLI - 48 tools for managing Databricks resources
+
+# Resources
+resources:
+  - name: mcp-server
+    description: Main MCP server process
+    port: 8000
+    
+# Commands to run
+command:
+  - python
+  - server.py
+  - --host=0.0.0.0
+  - --port=8000
+
+# Environment variables
+env:
+  - name: DATABRICKS_HOST
+    value: https://e2-demo-west.cloud.databricks.com
+  - name: DATABRICKS_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: databricks-token
+        key: token
+

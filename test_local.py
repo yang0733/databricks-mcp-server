@@ -8,8 +8,8 @@ from fastmcp.client.transports import StreamableHttpTransport
 
 
 # Configuration - UPDATE THESE WITH YOUR DATABRICKS CREDENTIALS
-DATABRICKS_HOST = "https://your-workspace.cloud.databricks.com"
-DATABRICKS_TOKEN = "your-personal-access-token"
+DATABRICKS_HOST = "https://e2-demo-west.cloud.databricks.com"
+DATABRICKS_TOKEN = "dapi14c8fa7e4aaa0907a3144b740fd91f50"
 SERVER_URL = "http://localhost:8000/mcp/"
 
 
@@ -51,8 +51,12 @@ async def test_mcp_server():
             print("-" * 40)
             result = await client.call_tool("get_session_context", {})
             if result:
-                context_data = result[0].content[0].text
-                print(f"✓ Session context: {context_data}")
+                # Handle both list and direct result
+                if isinstance(result, list):
+                    context_data = result[0].content[0].text
+                else:
+                    context_data = str(result.content[0].text if hasattr(result, 'content') else result)
+                print(f"✓ Session context: {context_data[:200]}")
             print()
             
             # Test 3: List clusters
@@ -61,12 +65,15 @@ async def test_mcp_server():
             try:
                 result = await client.call_tool("list_clusters", {})
                 if result:
-                    clusters_data = result[0].content[0].text
+                    if isinstance(result, list):
+                        clusters_data = result[0].content[0].text
+                    else:
+                        clusters_data = str(result.content[0].text if hasattr(result, 'content') else result)
                     print(f"✓ Clusters retrieved:")
                     print(f"  {clusters_data[:300]}...")
                 print()
             except Exception as e:
-                print(f"⚠ Error listing clusters: {str(e)[:100]}")
+                print(f"⚠ Error listing clusters: {str(e)[:200]}")
                 print()
             
             # Test 4: List jobs
@@ -75,12 +82,12 @@ async def test_mcp_server():
             try:
                 result = await client.call_tool("list_jobs", {"limit": 5})
                 if result:
-                    jobs_data = result[0].content[0].text
+                    jobs_data = str(result.content[0].text if hasattr(result, 'content') else result)[:300]
                     print(f"✓ Jobs retrieved:")
-                    print(f"  {jobs_data[:300]}...")
+                    print(f"  {jobs_data}...")
                 print()
             except Exception as e:
-                print(f"⚠ Error listing jobs: {str(e)[:100]}")
+                print(f"⚠ Error listing jobs: {str(e)[:200]}")
                 print()
             
             # Test 5: List workspace
@@ -89,12 +96,12 @@ async def test_mcp_server():
             try:
                 result = await client.call_tool("list_workspace", {"path": "/Workspace"})
                 if result:
-                    workspace_data = result[0].content[0].text
+                    workspace_data = str(result.content[0].text if hasattr(result, 'content') else result)[:300]
                     print(f"✓ Workspace objects retrieved:")
-                    print(f"  {workspace_data[:300]}...")
+                    print(f"  {workspace_data}...")
                 print()
             except Exception as e:
-                print(f"⚠ Error listing workspace: {str(e)[:100]}")
+                print(f"⚠ Error listing workspace: {str(e)[:200]}")
                 print()
             
             # Test 6: Set workspace path (stateful operation)
@@ -103,17 +110,17 @@ async def test_mcp_server():
             try:
                 result = await client.call_tool("set_workspace_path", {"path": "/Workspace/Users"})
                 if result:
-                    message = result[0].content[0].text
+                    message = str(result.content[0].text if hasattr(result, 'content') else result)
                     print(f"✓ {message}")
                 
                 # Verify context was updated
                 result = await client.call_tool("get_session_context", {})
                 if result:
-                    context_data = result[0].content[0].text
+                    context_data = str(result.content[0].text if hasattr(result, 'content') else result)[:200]
                     print(f"✓ Updated context: {context_data}")
                 print()
             except Exception as e:
-                print(f"⚠ Error setting workspace path: {str(e)[:100]}")
+                print(f"⚠ Error setting workspace path: {str(e)[:200]}")
                 print()
             
             # Test 7: List SQL warehouses
@@ -122,12 +129,12 @@ async def test_mcp_server():
             try:
                 result = await client.call_tool("list_warehouses", {})
                 if result:
-                    warehouses_data = result[0].content[0].text
+                    warehouses_data = str(result.content[0].text if hasattr(result, 'content') else result)[:300]
                     print(f"✓ SQL warehouses retrieved:")
-                    print(f"  {warehouses_data[:300]}...")
+                    print(f"  {warehouses_data}...")
                 print()
             except Exception as e:
-                print(f"⚠ Error listing warehouses: {str(e)[:100]}")
+                print(f"⚠ Error listing warehouses: {str(e)[:200]}")
                 print()
             
             # Test 8: List Unity Catalog catalogs
@@ -136,12 +143,12 @@ async def test_mcp_server():
             try:
                 result = await client.call_tool("list_catalogs", {})
                 if result:
-                    catalogs_data = result[0].content[0].text
+                    catalogs_data = str(result.content[0].text if hasattr(result, 'content') else result)[:300]
                     print(f"✓ UC catalogs retrieved:")
-                    print(f"  {catalogs_data[:300]}...")
+                    print(f"  {catalogs_data}...")
                 print()
             except Exception as e:
-                print(f"⚠ Error listing catalogs: {str(e)[:100]}")
+                print(f"⚠ Error listing catalogs: {str(e)[:200]}")
                 print()
             
             # Test 9: List secret scopes
@@ -150,12 +157,12 @@ async def test_mcp_server():
             try:
                 result = await client.call_tool("list_secret_scopes", {})
                 if result:
-                    scopes_data = result[0].content[0].text
+                    scopes_data = str(result.content[0].text if hasattr(result, 'content') else result)[:300]
                     print(f"✓ Secret scopes retrieved:")
-                    print(f"  {scopes_data[:300]}...")
+                    print(f"  {scopes_data}...")
                 print()
             except Exception as e:
-                print(f"⚠ Error listing secret scopes: {str(e)[:100]}")
+                print(f"⚠ Error listing secret scopes: {str(e)[:200]}")
                 print()
             
             print("=" * 80)

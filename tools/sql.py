@@ -131,7 +131,7 @@ def register_tools(mcp, get_wrapper):
         if response.result:
             result["row_count"] = response.result.row_count
             result["data_array"] = response.result.data_array if response.result.data_array else []
-            result["truncated"] = response.result.truncated
+            result["truncated"] = getattr(response.result, 'truncated', False)
             
         result["message"] = f"Query executed. Statement ID: {response.statement_id}"
         
@@ -164,9 +164,9 @@ def register_tools(mcp, get_wrapper):
         if response.result:
             result["row_count"] = response.result.row_count
             result["data_array"] = response.result.data_array if response.result.data_array else []
-            result["truncated"] = response.result.truncated
-            result["chunk_index"] = response.result.chunk_index
-            result["has_more_chunks"] = response.result.next_chunk_index is not None
+            result["truncated"] = getattr(response.result, 'truncated', False)
+            result["chunk_index"] = getattr(response.result, 'chunk_index', None)
+            result["has_more_chunks"] = getattr(response.result, 'next_chunk_index', None) is not None
             
             # Include schema information
             if response.manifest and response.manifest.schema:

@@ -9,6 +9,41 @@ A stateful MCP (Model Context Protocol) server that exposes comprehensive Databr
 - **HTTP API**: Programmatic access for AI agents and automation scripts
 - **Secure Authentication**: Per-request authentication via user personal access tokens
 - **Production Ready**: Deployable as Databricks App for team-wide access
+- **🗣️ Chat Agent**: Natural language interface powered by Claude for conversational Databricks management
+
+## 💬 Quick Start: Chat Agent
+
+Want to interact with Databricks using natural language? Try the chat agent!
+
+```bash
+# Install dependencies
+pip install anthropic
+
+# Set your API keys
+export ANTHROPIC_API_KEY='sk-ant-...'
+export DATABRICKS_HOST='https://your-workspace.cloud.databricks.com'
+export DATABRICKS_TOKEN='dapi...'
+
+# Start the MCP server (in one terminal)
+python server.py --port 8000
+
+# Run the chat agent (in another terminal)
+python chat_agent.py
+```
+
+**Example conversation:**
+```
+You: Show me all my clusters
+Agent: I found 3 clusters... [lists clusters with details]
+
+You: Start the ML cluster
+Agent: Starting ml-cluster... Done! The cluster is now running.
+
+You: Run a query to get the top 10 taxi trips
+Agent: [executes query and formats results in a table]
+```
+
+👉 **[Full Chat Agent Documentation](./CHAT_AGENT.md)**
 
 ## 📦 Supported Operations
 

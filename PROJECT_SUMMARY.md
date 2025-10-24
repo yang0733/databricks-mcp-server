@@ -6,12 +6,13 @@ A comprehensive, production-ready MCP server that exposes Databricks CLI capabil
 
 ## 📊 Project Statistics
 
-- **Total Files**: 19
-- **Python Files**: 13
-- **Total Lines of Code**: ~2,177
-- **Tools Implemented**: 43+
+- **Total Files**: 23
+- **Python Files**: 15
+- **Total Lines of Code**: ~3,200+
+- **Tools Implemented**: 48
 - **Service Categories**: 8
-- **Documentation Pages**: 3
+- **Documentation Pages**: 5
+- **💬 Chat Agent**: Natural language interface with LLM integration
 
 ## 🏗 Architecture
 
@@ -35,6 +36,13 @@ A comprehensive, production-ready MCP server that exposes Databricks CLI capabil
    - Context state tracking
    - ~100 lines
 
+4. **🤖 Chat Agent** (`chat_agent.py`)
+   - Natural language interface
+   - LLM integration (Claude/GPT)
+   - Conversational workflows
+   - Multi-step tool orchestration
+   - ~400 lines
+
 ### Tool Modules
 
 | Module | Tools | Lines | Description |
@@ -48,7 +56,7 @@ A comprehensive, production-ready MCP server that exposes Databricks CLI capabil
 | `sql.py` | 5 | ~180 | SQL warehouse and queries |
 | `unity_catalog.py` | 6 | ~240 | UC catalog operations |
 
-**Total Tools**: 43
+**Total Tools**: 48 (43 Databricks operations + 5 context management)
 
 ## 🎯 Key Features Implemented
 
@@ -62,6 +70,7 @@ A comprehensive, production-ready MCP server that exposes Databricks CLI capabil
 - ✅ Secrets: Manage scopes, store/list secrets
 - ✅ SQL: Manage warehouses, execute queries, get results
 - ✅ Unity Catalog: Catalogs, schemas, tables, volumes
+- ✅ **🗣️ Chat Agent**: Natural language interface with LLM
 
 ### 2. Stateful Context Management
 
@@ -103,28 +112,33 @@ Tools for managing context:
 
 ```
 databricks_cli_mcp/
-├── .git/                   # Git repository
-├── .gitignore             # Git ignore patterns
-├── README.md              # Main documentation (470 lines)
-├── DEPLOYMENT.md          # Deployment guide (260 lines)
-├── PROJECT_SUMMARY.md     # This file
-├── requirements.txt       # Python dependencies
-├── databricks.yml         # Databricks App config
-├── deploy.sh             # Deployment script
-├── test_local.py         # Local testing script (200+ lines)
-├── server.py             # Main MCP server (180 lines)
-├── auth.py               # Authentication handler (75 lines)
-├── databricks_client.py  # Client wrapper (100 lines)
-└── tools/                # Tool implementations
+├── .git/                      # Git repository
+├── .gitignore                 # Git ignore patterns
+├── README.md                  # Main documentation (500+ lines)
+├── DEPLOYMENT.md              # Deployment guide (260 lines)
+├── CHAT_AGENT.md             # Chat agent documentation (300+ lines)
+├── AGENT_IMPLEMENTATION.md   # Technical implementation guide (400+ lines)
+├── PROJECT_SUMMARY.md        # This file
+├── requirements.txt          # Python dependencies
+├── databricks.yml            # Databricks App config
+├── deploy.sh                # Deployment script
+├── demo_chat.sh             # Chat agent demo script
+├── test_local.py            # Local testing script (200+ lines)
+├── test_chat_agent.py       # Chat infrastructure test
+├── chat_agent.py            # 🤖 Natural language agent (400+ lines)
+├── server.py                # Main MCP server (180 lines)
+├── auth.py                  # Authentication handler (75 lines)
+├── databricks_client.py     # Client wrapper (100 lines)
+└── tools/                   # Tool implementations
     ├── __init__.py
-    ├── clusters.py       # 6 tools, 240 lines
-    ├── jobs.py          # 7 tools, 280 lines
-    ├── notebooks.py     # 4 tools, 160 lines
-    ├── workspace.py     # 5 tools, 180 lines
-    ├── repos.py         # 5 tools, 200 lines
-    ├── secrets.py       # 5 tools, 150 lines
-    ├── sql.py           # 5 tools, 180 lines
-    └── unity_catalog.py # 6 tools, 240 lines
+    ├── clusters.py          # 6 tools, 240 lines
+    ├── jobs.py             # 7 tools, 280 lines
+    ├── notebooks.py        # 4 tools, 160 lines
+    ├── workspace.py        # 5 tools, 180 lines
+    ├── repos.py            # 5 tools, 200 lines
+    ├── secrets.py          # 5 tools, 150 lines
+    ├── sql.py              # 5 tools, 180 lines
+    └── unity_catalog.py    # 6 tools, 240 lines
 ```
 
 ## 🚀 Usage Examples
@@ -138,8 +152,38 @@ python server.py
 # 2. Run tests
 python test_local.py
 
-# 3. Deploy to Databricks
+# 3. Try the chat agent (NEW!)
+export ANTHROPIC_API_KEY='sk-ant-...'
+python chat_agent.py
+
+# 4. Deploy to Databricks
 ./deploy.sh
+```
+
+### 💬 Chat Agent Example
+
+```bash
+$ python chat_agent.py
+
+You: Show me all my clusters
+
+Agent: I found 3 clusters in your workspace:
+
+1. **ml-cluster** (RUNNING)
+   - Spark: 14.3.x-scala2.12
+   - Workers: 2-8 autoscaling
+   
+2. **analytics-cluster** (TERMINATED)
+   - Last used: 4 hours ago
+   
+3. **dev-cluster** (PENDING)
+   - Starting up...
+
+You: Start the analytics cluster and run my daily report notebook
+
+Agent: Starting analytics-cluster... Done! Now running your 
+       daily-report notebook on it. Job run ID: 12345.
+       I'll let you know when it completes.
 ```
 
 ### Agent Integration
@@ -196,14 +240,18 @@ async with Client(transport=transport) as client:
 ### For Users
 
 1. **README.md**: Complete user guide
-2. **DEPLOYMENT.md**: Deployment instructions
-3. **test_local.py**: Example usage patterns
+2. **CHAT_AGENT.md**: Natural language interface guide
+3. **DEPLOYMENT.md**: Deployment instructions
+4. **test_local.py**: Example usage patterns
+5. **test_chat_agent.py**: Chat agent examples
 
 ### For Developers
 
 1. **server.py**: Server architecture
-2. **tools/*.py**: Tool implementation patterns
-3. **databricks_client.py**: Context management
+2. **chat_agent.py**: LLM integration patterns
+3. **AGENT_IMPLEMENTATION.md**: Technical implementation guide
+4. **tools/*.py**: Tool implementation patterns
+5. **databricks_client.py**: Context management
 
 ## ✅ Completion Checklist
 
@@ -211,13 +259,16 @@ async with Client(transport=transport) as client:
 - [x] Git repository initialized
 - [x] Authentication handler implemented
 - [x] Stateful server implemented
-- [x] 43+ tools across 8 categories
+- [x] 48 tools across 8 categories
 - [x] Comprehensive testing script
 - [x] Databricks App configuration
 - [x] Deployment automation
 - [x] Complete documentation
 - [x] All code linted (0 errors)
 - [x] Git commits made
+- [x] 🤖 **Chat Agent with LLM integration**
+- [x] Natural language interface
+- [x] Multi-step workflow support
 
 ## 🎯 What's Next
 
@@ -269,6 +320,8 @@ This project delivers:
 - ✅ **Comprehensive documentation**
 - ✅ **Tested and working** local implementation
 - ✅ **Git version controlled** for team collaboration
+- ✅ **🗣️ Natural language chat interface** with LLM
+- ✅ **Multi-step workflow orchestration** via conversation
 
 ## 🙏 Acknowledgments
 
@@ -289,7 +342,8 @@ Built using:
 - Production use
 
 **Created**: October 2025  
-**Total Development Time**: Single session  
-**Lines of Code**: ~2,177  
-**Tools Implemented**: 43+
+**Total Development Time**: Extended session  
+**Lines of Code**: ~3,200+  
+**Tools Implemented**: 48  
+**Chat Agent**: ✅ Integrated with Claude/GPT
 

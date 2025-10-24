@@ -22,23 +22,59 @@ def extract_auth_from_context(context) -> tuple[str, str]:
     Raises:
         AuthenticationError: If required credentials are missing
     """
+    import os
+    
+    # TEMPORARY WORKAROUND: Check environment variables first for local testing
+    env_host = os.getenv('DATABRICKS_HOST')
+    env_token = os.getenv('DATABRICKS_TOKEN')
+    
+    if env_host and env_token:
+        # Use environment variables if set
+        if not env_host.startswith('http'):
+            env_host = f'https://{env_host}'
+        return env_host, env_token
+    
     # Try to get from context metadata/headers
-    metadata = getattr(context, 'metadata', {}) or {}
+    # FastMCP Context object may have metadata, meta, or direct header access
+    metadata = {}
     
-    # Check for custom headers
-    host = metadata.get('x-databricks-host')
-    token = metadata.get('x-databricks-token')
+    # Try different ways to access metadata
+    if hasattr(context, 'meta'):
+        metadata = context.meta or {}
+        print(f"DEBUG: Got meta: {metadata}", file=sys.stderr)
+    elif hasattr(context, 'metadata'):
+        metadata = context.metadata or {}
+        print(f"DEBUG: Got metadata: {metadata}", file=sys.stderr)
+    elif hasattr(context, 'request_context'):
+        metadata = getattr(context.request_context, 'meta', {}) or {}
+        print(f"DEBUG: Got request_context.meta: {metadata}", file=sys.stderr)
     
-    # Also check standard authorization header formats
-    if not host:
-        host = metadata.get('databricks-host')
-    if not token:
-        token = metadata.get('databricks-token')
+    # Also try to get headers directly from request if available
+    if hasattr(context, 'request'):
+        headers = getattr(context.request, 'headers', {}) or {}
+        print(f"DEBUG: Got request.headers: {headers}", file=sys.stderr)
+        metadata.update(headers)
+    
+    # Check for custom headers (case-insensitive)
+    metadata_lower = {k.lower(): v for k, v in metadata.items()}
+    
+    host = (metadata_lower.get('x-databricks-host') or 
+            metadata_lower.get('databricks-host') or
+            metadata.get('x-databricks-host') or
+            metadata.get('databricks-host'))
+    
+    token = (metadata_lower.get('x-databricks-token') or 
+             metadata_lower.get('databricks-token') or
+             metadata.get('x-databricks-token') or
+             metadata.get('databricks-token'))
         
     if not host or not token:
+        # Debug: print what we got
+        import json
+        available_keys = list(metadata.keys())
         raise AuthenticationError(
-            "Missing Databricks credentials. Please provide 'x-databricks-host' "
-            "and 'x-databricks-token' headers."
+            f"Missing Databricks credentials. Please provide 'x-databricks-host' "
+            f"and 'x-databricks-token' headers. Available keys: {available_keys}"
         )
     
     # Ensure host has proper format

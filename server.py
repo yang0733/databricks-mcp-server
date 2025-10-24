@@ -2,8 +2,8 @@
 
 import sys
 import argparse
-from typing import Optional
-from fastmcp import FastMCP
+from typing import Optional, Annotated
+from fastmcp import FastMCP, Context
 from databricks.sdk import WorkspaceClient
 
 from auth import get_client_from_context, AuthenticationError
@@ -17,10 +17,10 @@ from databricks_client import (
 from tools import clusters, jobs, notebooks, workspace, repos, secrets, sql, unity_catalog
 
 
-# Initialize FastMCP server with stateful mode
+# Initialize FastMCP server
+# Note: stateless_http is deprecated, will be set in run() call
 mcp = FastMCP(
     name="DatabricksCLI",
-    stateless_http=False,  # Enable stateful session management
 )
 
 
@@ -67,7 +67,7 @@ unity_catalog.register_tools(mcp, get_databricks_wrapper)
 
 # Context management tools
 @mcp.tool()
-def get_session_context(context) -> dict:
+def get_session_context(context: Annotated[Context, "MCP context"]) -> dict:
     """Get current session context including workspace path, cluster, job, and warehouse IDs.
     
     Returns a dictionary with the current session state that persists across tool calls.
@@ -85,7 +85,7 @@ def get_session_context(context) -> dict:
 
 
 @mcp.tool()
-def set_workspace_path(path: str, context) -> str:
+def set_workspace_path(path: str, context: Annotated[Context, "MCP context"]) -> str:
     """Set the current workspace path for subsequent operations.
     
     Args:
@@ -101,7 +101,7 @@ def set_workspace_path(path: str, context) -> str:
 
 
 @mcp.tool()
-def set_current_cluster(cluster_id: str, context) -> str:
+def set_current_cluster(cluster_id: str, context: Annotated[Context, "MCP context"]) -> str:
     """Set the current cluster ID for subsequent operations.
     
     Args:
@@ -117,7 +117,7 @@ def set_current_cluster(cluster_id: str, context) -> str:
 
 
 @mcp.tool()
-def set_current_warehouse(warehouse_id: str, context) -> str:
+def set_current_warehouse(warehouse_id: str, context: Annotated[Context, "MCP context"]) -> str:
     """Set the current SQL warehouse ID for subsequent operations.
     
     Args:
@@ -133,7 +133,7 @@ def set_current_warehouse(warehouse_id: str, context) -> str:
 
 
 @mcp.tool()
-def clear_session_context(context) -> str:
+def clear_session_context(context: Annotated[Context, "MCP context"]) -> str:
     """Clear the current session context and reset all stateful settings.
     
     Returns:
@@ -152,11 +152,12 @@ def main():
     args = parser.parse_args()
     
     print(f"Starting Databricks CLI MCP Server on {args.host}:{args.port}")
-    print("Server is stateful - session context will be maintained across requests")
+    print("Server maintains session context across requests")
     print("Provide 'x-databricks-host' and 'x-databricks-token' headers for authentication")
     
     # Run server in HTTP mode
-    mcp.run(transport='http', host=args.host, port=args.port)
+    # Use stateless mode so headers are sent with each request
+    mcp.run(transport='http', host=args.host, port=args.port, stateless_http=True)
 
 
 if __name__ == '__main__':
